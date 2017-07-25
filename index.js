@@ -1,4 +1,6 @@
+require('newrelic');
 var express = require('express');
+var pg = require('pg');
 var app = express();
 
 app.set('port', (process.env.PORT || 5000));
@@ -64,4 +66,49 @@ app.get('/bins', function (req, res, next) {
 //////
 app.listen(app.get('port'), function() {
   console.log('Node app is running on port', app.get('port'));
+});
+app.get('/db', function (request, response) {
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    client.query('SELECT * FROM test_table', function(err, result) {
+      done();
+      if (err)
+       { console.error(err); response.send("Error " + err); }
+      else
+       { response.render('pages/db', {results: result.rows} ); }
+    });
+  });
+});
+app.get('/account', function (request, response) {
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    client.query('SELECT * FROM salesforce.account', function(err, result) {
+      done();
+      if (err)
+       { console.error(err); response.send("Error " + err); }
+      else
+       { response.render('pages/account', {results: result.rows} ); }
+    });
+  });
+});
+app.get('/salesforce', function (request, response) {
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    client.query('SELECT * FROM salesforce.EDM_REF_PRODUCT_TYPE__c limit 500', function(err, result) {
+      done();
+      if (err)
+       { console.error(err); response.send("Error " + err); }
+      else
+       { response.render('pages/salesforce', {results: result.rows} ); }
+    });
+  });
+});
+
+app.get('/territories', function (request, response) {
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    client.query('SELECT * FROM salesforce.GTS_territory__c limit 500', function(err, result) {
+      done();
+      if (err)
+       { console.error(err); response.send("Error " + err); }
+      else
+       { response.render('pages/territories', {results: result.rows} ); }
+    });
+  });
 });
